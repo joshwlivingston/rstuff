@@ -4,6 +4,8 @@
 # rstuff
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/joshwlivingston/rstuff/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/joshwlivingston/rstuff/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 rstuff is a collection of stuff I use in my day-to-day R work.
