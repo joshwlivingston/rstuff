@@ -1,0 +1,5 @@
+^LICENSE\.md$
+^dev$
+^\.vscode$
+^air\.toml$
+^README\.Rmd$
