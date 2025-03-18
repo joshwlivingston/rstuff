@@ -3,9 +3,12 @@
 \name{class-length-checks}
 \alias{class-length-checks}
 \alias{check_logical_length_one}
+\alias{check_character_length_one}
 \title{Function class and length checks}
 \usage{
 check_logical_length_one(x)
+
+check_character_length_one(x)
 }
 \arguments{
 \item{x}{The value to be checked}
@@ -21,6 +24,16 @@ specific class and length. These are a collection of such functions.
 
 # logical: length-one
 check_logical_length_one(TRUE)
+
 try(check_logical_length_one(rep(FALSE, 2)))
+
 try(check_logical_length_one(Sys.Date()))
+
+
+# character: length-one
+check_character_length_one("x")
+
+try(check_character_length_one(c("x", "y")))
+
+try(check_character_length_one(TRUE))
 }

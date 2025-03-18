@@ -1,0 +1,11 @@
+^LICENSE\.md$
+^dev$
+^\.vscode$
+^air\.toml$
+^README\.Rmd$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^.*\.Rproj$
+^\.Rproj\.user$

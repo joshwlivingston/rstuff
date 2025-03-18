@@ -9,14 +9,17 @@ Description: rstuff is a collection of functions and other objects I use in my
 License: MIT + file LICENSE
 Imports: 
     DBI,
+    devtools,
     duckdb,
+    fs,
     pool,
-    rlang
+    rlang,
+    usethis
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests: 
-    fs,
+    rstudioapi,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://github.com/joshwlivingston/rstuff, https://joshwlivingston.github.io/rstuff/

@@ -1,12 +1,12 @@
 Version: 1.0
-ProjectId: ddf1cb61-6c2d-40fd-87fc-f287f5aa47cb
+ProjectId: d699ef6d-f0cd-41ec-af22-f40414702e71
 
 RestoreWorkspace: Default
 SaveWorkspace: Default
 AlwaysSaveHistory: Default
 
 EnableCodeIndexing: Yes
-UseSpacesForTab: No
+UseSpacesForTab: Yes
 NumSpacesForTab: 2
 Encoding: UTF-8
 
@@ -20,7 +20,6 @@ LineEndingConversion: Posix
 BuildType: Package
 PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source
-PackageCheckArgs: --as-cran
 PackageRoxygenize: rd,collate,namespace
 
 SpellingDictionary: en_US

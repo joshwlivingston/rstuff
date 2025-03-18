@@ -12,13 +12,29 @@
 #'
 #' # logical: length-one
 #' check_logical_length_one(TRUE)
+#'
 #' try(check_logical_length_one(rep(FALSE, 2)))
+#'
 #' try(check_logical_length_one(Sys.Date()))
+#'
+#'
+#' # character: length-one
+#' check_character_length_one("x")
+#'
+#' try(check_character_length_one(c("x", "y")))
+#'
+#' try(check_character_length_one(TRUE))
 
 #' @rdname class-length-checks
 #' @export
 check_logical_length_one <- function(x) {
 	.check_class_f_length_i(x, is.logical, 1)
+}
+
+#' @rdname class-length-checks
+#' @export
+check_character_length_one <- function(x) {
+	.check_class_f_length_i(x, is.character, 1)
 }
 
 # meant to be called inside an exported check_() function
