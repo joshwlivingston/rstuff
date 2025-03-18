@@ -1,5 +1,7 @@
 test_that("get_con_duckdb() returns a Pool to a duckdb instance", {
 	con_duck <- get_con_duckdb()
+	reg.finalizer(con_duck, con_duck$close, onexit = TRUE)
+
 	expect_s3_class(con_duck, "Pool")
 	expect_s3_class(con_duck, "R6")
 	expect_equal(
