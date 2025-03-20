@@ -1,8 +1,8 @@
 [format]
-line-width = 80
+line-width = 100
 indent-width = 1
 indent-style = "tab"
 line-ending = "lf"
-persistent-line-breaks = false
+persistent-line-breaks = true
 exclude = []
 default-exclude = true

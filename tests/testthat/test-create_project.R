@@ -30,67 +30,36 @@ test_that("create_project() fails when `dir` exists", {
 	fs::dir_delete("tmp")
 })
 
-test_that("create_project() fails when `open` is TRUE outside RStudio", {
-	expect_error(create_project("tmp"))
-	expect_error(create_project("tmp", open = TRUE))
+test_that("create_project() throws a warning when `open` is TRUE outside RStudio", {
+	expect_warning(create_project("tmp", open = TRUE, build_readme_md = FALSE, use_bad_rproj = TRUE))
+	fs::dir_delete("tmp")
 })
 
-res <- NULL
-expect_file_exists <- NULL
-expect_dir_exists <- NULL
-expect_dir_length <- NULL
-
-test_that("create_project() runs successullly", {
-	skip_on_cran()
-	skip_on_ci()
-
-	check_if_tmp_exists()
-	res <<- create_project("tmp", open = FALSE)
-
-	expect_file_exists <<- function(...)
-		expect_true(fs::file_exists(fs::path_join(c(res, ...))))
-
-	expect_dir_exists <<- function(...)
-		expect_true(fs::dir_exists(fs::path_join(c(res, ...))))
-
-	expect_dir_length <<- function(n, ...)
-		expect_length(fs::dir_ls(fs::path_join(c(res, ...)), all = TRUE), n)
-
-	expect_true(TRUE)
-})
+res <- create_project("tmp", open = FALSE, build_readme_md = FALSE, use_bad_rproj = TRUE)
+expect_file_exists <- function(...) expect_true(fs::file_exists(fs::path_join(c(res, ...))))
+expect_dir_exists <- function(...) expect_true(fs::dir_exists(fs::path_join(c(res, ...))))
+expect_dir_length <- function(n, ...)
+	expect_length(fs::dir_ls(fs::path_join(c(res, ...)), all = TRUE), n)
 
 test_that("create_project() returns an fs_path of the new `dir`", {
-	skip_on_cran()
-	skip_on_ci()
-
 	expect_s3_class(res, c("fs_path", "character"))
 	expect_true(grepl("tmp$", res))
 })
 
 test_that("create_project() creates new directory", {
-	skip_on_cran()
-	skip_on_ci()
-
 	expect_true(fs::dir_exists("tmp"))
 })
 
 test_that("create_project() writes all expected files", {
-	skip_on_cran()
-	skip_on_ci()
-
-	expect_dir_length(16)
+	expect_dir_length(11)
 
 	expect_file_exists("_pkgdown.yml")
 	expect_file_exists(".gitignore")
 	expect_file_exists(".Rbuildignore")
 	expect_file_exists("air.toml")
 	expect_file_exists("DESCRIPTION")
-	expect_file_exists("LICENSE")
-	expect_file_exists("LICENSE.md")
-	expect_file_exists("NAMESPACE")
-	expect_file_exists("Readme.md")
 	expect_file_exists("Readme.Rmd")
-	expect_file_exists("tmp.Rproj")
+	expect_file_exists("project.Rproj")
 
 	expect_dir_length(2, ".github")
 	expect_file_exists(".github", ".gitignore")
@@ -105,9 +74,6 @@ test_that("create_project() writes all expected files", {
 
 	expect_dir_length(1, "dev")
 	expect_file_exists("dev", "config_attachment.yaml")
-
-	expect_dir_length(1, "man")
-	expect_dir_exists("man", "figures")
 
 	expect_dir_length(0, "R")
 	expect_dir_exists("R")

@@ -9,6 +9,7 @@ Description: rstuff is a collection of functions and other objects I use in my
 License: MIT + file LICENSE
 Imports: 
     DBI,
+    desc,
     devtools,
     duckdb,
     fs,
