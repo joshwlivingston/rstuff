@@ -52,9 +52,8 @@ create_project <- function(
 	if (github_pkgdown && !github_use)
 		rlang::abort(X = "`github_use` must be TRUE when `github_pkgdown` is TRUE")
 
-	whoami <- NULL
 	if (github_use) {
-		whoami <<- suppressMessages(gh::gh_whoami(.api_url = NULL))
+		whoami <- gh::gh_whoami(.api_url = NULL)
 		if (is.null(whoami)) {
 			rlang::abort(
 				c(
