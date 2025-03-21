@@ -1,28 +1,4 @@
-check_if_tmp_exists <- function() {
-	if (fs::dir_exists("tmp")) rlang::abort("`tmp` directory already exists")
-	return(invisible(TRUE))
-}
-
-test_that("check_if_tmp_exists() fails when directory 'tmp' exists", {
-	fs::dir_create("tmp")
-	expect_error(check_if_tmp_exists(), regexp = "`tmp` directory already exists")
-	fs::dir_delete("tmp")
-})
-
-test_that("check_if_tmp_exists() returns TRUE when directory 'tmp' does not exist", {
-	expect_true(check_if_tmp_exists())
-})
-
-test_that("create_project() fails when `force` is not a length-one logical", {
-	expect_error(create_project("tmp", rep(TRUE, 2)))
-	expect_false(fs::dir_exists("tmp"))
-
-	expect_error(create_project("tmp", "TRUE"))
-	expect_false(fs::dir_exists("tmp"))
-})
-
 test_that("create_project() fails when `dir` exists", {
-	check_if_tmp_exists()
 	fs::dir_create("tmp")
 
 	expect_error(create_project("tmp"))
@@ -30,12 +6,26 @@ test_that("create_project() fails when `dir` exists", {
 	fs::dir_delete("tmp")
 })
 
+test_that("create_project() throws an error when Github repository exists", {
+	skip() # requires https auth
+	expect_error(create_project("rstuff"))
+})
+
+test_that("create_project() throws an error when `github_pkgdown` is TRUE and `github_use` is FALSE", {
+	expect_error(create_project("tmp", github_use = FALSE, github_pkgdown = TRUE))
+})
+
 test_that("create_project() throws a warning when `open` is TRUE outside RStudio", {
-	expect_warning(create_project("tmp", open = TRUE, build_readme_rmd = FALSE, use_bad_rproj = TRUE))
+	expect_warning(create_project(
+		"tmp",
+		open = TRUE,
+		github_use = FALSE,
+		github_pkgdown = FALSE
+	))
 	fs::dir_delete("tmp")
 })
 
-res <- create_project("tmp", open = FALSE, build_readme_rmd = FALSE, use_bad_rproj = TRUE)
+res <- create_project("tmp", open = FALSE, github_use = FALSE, github_pkgdown = FALSE)
 expect_file_exists <- function(...) expect_true(fs::file_exists(fs::path_join(c(res, ...))))
 expect_dir_exists <- function(...) expect_true(fs::dir_exists(fs::path_join(c(res, ...))))
 expect_dir_length <- function(n, ...)
@@ -51,17 +41,23 @@ test_that("create_project() creates new directory", {
 })
 
 test_that("create_project() writes all expected files", {
-	expect_dir_length(11)
+	expect_dir_length(17)
 
 	expect_file_exists("_pkgdown.yml")
 	expect_file_exists(".gitignore")
 	expect_file_exists(".Rbuildignore")
 	expect_file_exists("air.toml")
 	expect_file_exists("DESCRIPTION")
-	expect_file_exists("project.Rproj")
+	expect_file_exists("tmp.Rproj")
+	expect_file_exists("LICENSE")
+	expect_file_exists("LICENSE.md")
+	expect_file_exists("NAMESPACE")
+	expect_file_exists("README.md")
+	expect_file_exists("README.Rmd")
 
-	expect_dir_length(2, ".github")
-	expect_file_exists(".github", ".gitignore")
+	expect_dir_exists(".git")
+
+	expect_dir_length(1, ".github")
 
 	expect_dir_length(3, ".github", "workflows")
 	expect_file_exists(".github", "workflows", "air.yaml")
@@ -74,8 +70,8 @@ test_that("create_project() writes all expected files", {
 	expect_dir_length(1, "dev")
 	expect_file_exists("dev", "config_attachment.yaml")
 
-	expect_dir_length(0, "R")
-	expect_dir_exists("R")
+	expect_dir_length(1, "R")
+	expect_file_exists("R", "hello.R")
 })
 
-if (fs::dir_exists("tmp")) fs::dir_delete("tmp")
+if (fs::dir_exists("tmp-")) fs::dir_delete("tmp")

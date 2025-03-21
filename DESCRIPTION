@@ -12,12 +12,16 @@ BugReports: https://github.com/joshwlivingston/rstuff/issues
 Imports: 
     DBI,
     desc,
+    devtools,
     duckdb,
     fs,
+    gh,
     pool,
     rlang,
+    rmarkdown,
     rstudioapi,
-    usethis
+    usethis,
+    utils
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

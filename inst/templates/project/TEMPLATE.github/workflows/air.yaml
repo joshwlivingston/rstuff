@@ -12,10 +12,6 @@ permissions:
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
-    # Only restrict concurrency for non-PR jobs
-    concurrency:
-      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
-    permissions:
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +19,7 @@ jobs:
       - name: Install air
         run: curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
 
-      - name: Call air
+      - name: Run air
         run: air format .
 
       - uses: stefanzweifel/git-auto-commit-action@v5

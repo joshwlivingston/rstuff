@@ -3,4 +3,6 @@
 export(check_character_length_one)
 export(check_logical_length_one)
 export(check_null_or_character_length_one)
+export(create_project)
 export(get_con_duckdb)
+import(rmarkdown)
