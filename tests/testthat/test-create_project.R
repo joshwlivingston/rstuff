@@ -74,4 +74,4 @@ test_that("create_project() writes all expected files", {
 	expect_file_exists("R", "hello.R")
 })
 
-if (fs::dir_exists("tmp-")) fs::dir_delete("tmp")
+if (fs::dir_exists("tmp")) fs::dir_delete("tmp")
