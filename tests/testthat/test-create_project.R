@@ -31,11 +31,11 @@ test_that("create_project() fails when `dir` exists", {
 })
 
 test_that("create_project() throws a warning when `open` is TRUE outside RStudio", {
-	expect_warning(create_project("tmp", open = TRUE, build_readme_md = FALSE, use_bad_rproj = TRUE))
+	expect_warning(create_project("tmp", open = TRUE, build_readme_rmd = FALSE, use_bad_rproj = TRUE))
 	fs::dir_delete("tmp")
 })
 
-res <- create_project("tmp", open = FALSE, build_readme_md = FALSE, use_bad_rproj = TRUE)
+res <- create_project("tmp", open = FALSE, build_readme_rmd = FALSE, use_bad_rproj = TRUE)
 expect_file_exists <- function(...) expect_true(fs::file_exists(fs::path_join(c(res, ...))))
 expect_dir_exists <- function(...) expect_true(fs::dir_exists(fs::path_join(c(res, ...))))
 expect_dir_length <- function(n, ...)
@@ -58,7 +58,6 @@ test_that("create_project() writes all expected files", {
 	expect_file_exists(".Rbuildignore")
 	expect_file_exists("air.toml")
 	expect_file_exists("DESCRIPTION")
-	expect_file_exists("Readme.Rmd")
 	expect_file_exists("project.Rproj")
 
 	expect_dir_length(2, ".github")

@@ -5,7 +5,7 @@ create_project <- function(
 	package_description = NULL,
 	package_license = NULL,
 	package_version = NULL,
-	build_readme_md = TRUE,
+	build_readme_rmd = TRUE,
 	use_bad_rproj = FALSE
 ) {
 	check_character_length_one(dir)
@@ -19,7 +19,7 @@ create_project <- function(
 	check_null_or_character_length_one(package_license)
 	check_null_or_character_length_one(package_version)
 
-	check_logical_length_one(build_readme_md)
+	check_logical_length_one(build_readme_rmd)
 
 	new_project_path <-
 		fs::dir_copy(
@@ -48,6 +48,8 @@ create_project <- function(
 	cwd <- getwd()
 	setwd(new_project_path)
 
+	usethis::use_namespace()
+
 	if (!is.null(package_license)) {
 		if (license == "mit") {
 			message("Creating MIT License")
@@ -58,8 +60,8 @@ create_project <- function(
 		}
 	}
 
-	if (build_readme_md) {
-		devtools::build_readme()
+	if (build_readme_rmd) {
+		usethis::use_readme_rmd()
 	}
 
 	if (open) {
@@ -83,6 +85,7 @@ create_project <- function(
 			return(new_project_path)
 		}
 
+		setwd(cwd)
 		rstudioapi::openProject(new_project_path)
 	}
 
