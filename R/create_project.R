@@ -35,10 +35,6 @@ create_project <- function(
 	open = TRUE
 ) {
 	check_character_length_one(dir)
-	.check_valid_package_name(dir)
-	if (dir.exists(dir)) rlang::abort("Directory already exists")
-
-	check_logical_length_one(open)
 
 	check_null_or_character_length_one(package_title)
 	check_null_or_character_length_one(package_description)
@@ -49,18 +45,27 @@ create_project <- function(
 	check_logical_length_one(github_pkgdown)
 	check_logical_length_one(github_private)
 
+	check_logical_length_one(open)
+
+	# Check valid driectory
+	if (!grepl("^[a-zA-Z][a-zA-Z0-9.]*[a-zA-Z0-9]$", dir))
+		rlang::abort(sprintf("`dir` must be a valid R package name"))
+	if (dir.exists(dir)) rlang::abort("Directory already exists")
+
+	# Check valid github_pkgdown and github_use combination
 	if (github_pkgdown && !github_use)
 		rlang::abort(X = "`github_use` must be TRUE when `github_pkgdown` is TRUE")
 
 	if (github_use) {
+		# Identify github credentials (must be pre-set be user)
 		whoami <- gh::gh_whoami(.api_url = NULL)
 		if (is.null(whoami)) {
 			rlang::abort(
 				c(
 					x = "Unable to discover a GitHub personal access token.",
 					i = "A token is required in order to create and push to a new repo.",
-					`_` = "Call {.run usethis::gh_token_help()} for help configuring a token.",
-					"Or, provide `use_github = FALSE` to create_project()"
+					"Call {.run usethis::gh_token_help()} for help configuring a token.",
+					"Or, provide `use_github = FALSE` to create_project() to skip creating the Github repo"
 				)
 			)
 		}
@@ -83,47 +88,55 @@ create_project <- function(
 		check_repo_is_new()
 	}
 
+	# Copy project template into provided dir
 	new_project_path <-
 		fs::dir_copy(
 			path = system.file("templates/project", package = "rstuff"),
 			new_path = dir,
 			overwrite = FALSE
 		)
+	message("project created at ", new_project_path)
+
+	# move to newly created dir
+	cwd <- getwd()
+	setwd(new_project_path)
 
 	# files are loaded into R Package with TEMPLATE added to the name to prevent build conflicts
+	# remove TEMPLATE from file names
 	vapply(
-		fs::dir_ls(new_project_path, all = TRUE),
+		fs::dir_ls(all = TRUE),
 		function(x) fs::file_move(x, gsub("TEMPLATE", "", x)),
 		character(1)
 	)
 
-	fs_join <- function(...) fs::path_join(c(new_project_path, ...))
-	fs::file_move(fs_join("project.Rproj"), fs_join(sprintf("%s.Rproj", dir)))
+	# rename .Rproj file to provided name
+	fs::file_move("project.Rproj", sprintf("%s.Rproj", dir))
 
+	# DESCRIPTION
 	description_fields <- usethis::use_description_defaults()
-
 	description_fields$Package <- dir
-
 	if (!is.null(package_title)) description_fields$Title <- str_to_title(package_title)
 	if (!is.null(package_description)) description_fields$Description <- package_description
 	if (!is.null(package_version)) description_fields$Version <- package_version
 
-	description <- desc::desc(
-		text = sprintf("%s: %s", names(description_fields), description_fields)
-	)
-	description$write(file = fs_join("DESCRIPTION"))
-	message("project created at ", new_project_path)
-
-	cwd <- getwd()
-	setwd(new_project_path)
-
-	system("git init")
-
-	devtools::document()
-	usethis::use_readme_rmd(open = FALSE)
+	description <- desc::desc(text = sprintf("%s: %s", names(description_fields), description_fields))
+	description$write(file = "DESCRIPTION")
 	usethis::use_package("devtools", "Suggests")
 	usethis::use_package("rmarkdown", "Suggests")
+
+	# .git/
+	system("git init")
+
+	# NAMESPACE, man/
+	devtools::document()
+
+	# README.Rmd
+	usethis::use_readme_rmd(open = FALSE)
+
+	# README.md
 	devtools::build_readme()
+
+	# LICENSE, LICENSE.md
 	if (is.null(package_license)) {
 		message("Creating MIT License")
 		usethis::use_mit_license()
@@ -132,10 +145,12 @@ create_project <- function(
 		usethis::use_proprietary_license(package_license)
 	}
 
+	# Commit all created files
 	system("git add .")
 	system("git commit -m \"Initial Commit\"")
 
 	if (github_use) {
+		# Create repo on Github
 		gh::gh(
 			endpoint = "POST /user/repos",
 			name = dir,
@@ -144,8 +159,8 @@ create_project <- function(
 			.api_url = NULL
 		)
 
+		# Update DESCRIPTION with repo URL
 		gh_url <- sprintf("%s/%s", whoami$html_url, dir)
-		system(sprintf("git remote add origin %s", gh_url))
 		proj_desc <- desc::desc()
 		proj_desc$set_list("URL", gh_url)
 		proj_desc$set_list("BugReports", sprintf("%s/issues", gh_url))
@@ -154,12 +169,18 @@ create_project <- function(
 		system("git commit -m \"Create Repository on Github\"")
 
 		# need to push before creating pkgdown
+		system(sprintf("git remote add origin %s", gh_url))
 		system("git push -u origin main")
+
 		if (github_pkgdown) {
+			# sets up Github Pages on Github-side
 			site <- usethis::use_github_pages()
+
+			# Update repo homepage URL with github pages url
 			site_url <- site$html_url
 			gh::gh(sprintf("PATCH /repos/%s/%s", whoami$login, dir), homepage = site_url)
 
+			# Update DESCRIPTION with Github pages url
 			proj_desc <- desc::desc()
 			proj_desc$set_list("URL", c(gh_url, site_url))
 			proj_desc$write()
@@ -167,12 +188,14 @@ create_project <- function(
 			system("git add .")
 			system("git commit -m \"Create Package Site\"")
 
+			# Add badges to README.Rmd, linked to R-CMD-CHECK Github Action. Then re-build README.md
 			usethis::use_github_actions_badge()
 			devtools::build_readme()
 			system("git add .")
 			system("git commit -m \"Add R CMD CHECK Badge to README\"")
 			system("git push")
 
+			# Open Github Repo in web browser
 			utils::browseURL(gh_url)
 		}
 	}
@@ -204,10 +227,4 @@ create_project <- function(
 
 	setwd(cwd)
 	return(new_project_path)
-}
-
-.check_valid_package_name <- function(x) {
-	if (!grepl("^[a-zA-Z][a-zA-Z0-9.]+$", x) || grepl("\\.$", x)) {
-		rlang::abort(sprintf("%s must be a valid R package name", x))
-	}
 }
