@@ -65,13 +65,22 @@ create_project <- function(
 			)
 		}
 
-		tryCatch(
-			{
-				repo <- gh::gh(sprintf("GET /repos/%s/%s", whoami$login, dir))
-				rlang::abort(sprintf("Github repository already exists at %s/%s", whoami$login, dir))
-			},
-			error = function(e) invisible(NULL)
-		)
+		# Throw error if repo exists with provided name
+		# built as separate function to use return in error catch
+		check_repo_is_new <- function() {
+			tryCatch(
+				# if GET throws error, repo does not exist. return TRUE
+				gh::gh(sprintf("GET /repos/%s/%s", whoami$login, dir)),
+				error = function(e) return(invisible(TRUE))
+			)
+
+			# if arrive here, repo exists. throw error
+			rlang::abort(
+				sprintf("Github repository already exists at %s/%s", whoami$login, dir),
+				call = rlang::caller_env()
+			)
+		}
+		check_repo_is_new()
 	}
 
 	new_project_path <-
