@@ -69,23 +69,23 @@ create_project <- function(
 				)
 			)
 		}
+		whoami$gh_url <- sprintf("%s/%s", whoami$html_url, dir)
 
 		# Throw error if repo exists with provided name
-		# built as separate function to use return in error catch
-		check_repo_is_new <- function() {
+		res <-
 			tryCatch(
 				# if GET throws error, repo does not exist. return TRUE
 				gh::gh(sprintf("GET /repos/%s/%s", whoami$login, dir)),
-				error = function(e) return(invisible(TRUE))
+				error = function(e) return(NULL)
 			)
 
+		if (!is.null(res)) {
 			# if arrive here, repo exists. throw error
 			rlang::abort(
 				sprintf("Github repository already exists at %s/%s", whoami$login, dir),
 				call = rlang::caller_env()
 			)
 		}
-		check_repo_is_new()
 	}
 
 	# Copy project template into provided dir
@@ -150,54 +150,9 @@ create_project <- function(
 	system("git commit -m \"Initial Commit\"")
 
 	if (github_use) {
-		# Create repo on Github
-		gh::gh(
-			endpoint = "POST /user/repos",
-			name = dir,
-			description = description_fields$Description,
-			private = github_private,
-			.api_url = NULL
-		)
-
-		# Update DESCRIPTION with repo URL
-		gh_url <- sprintf("%s/%s", whoami$html_url, dir)
-		proj_desc <- desc::desc()
-		proj_desc$set_list("URL", gh_url)
-		proj_desc$set_list("BugReports", sprintf("%s/issues", gh_url))
-		proj_desc$write()
-		system("git add .")
-		system("git commit -m \"Create Repository on Github\"")
-
-		# need to push before creating pkgdown
-		system(sprintf("git remote add origin %s", gh_url))
-		system("git push -u origin main")
-
-		if (github_pkgdown) {
-			# sets up Github Pages on Github-side
-			site <- usethis::use_github_pages()
-
-			# Update repo homepage URL with github pages url
-			site_url <- site$html_url
-			gh::gh(sprintf("PATCH /repos/%s/%s", whoami$login, dir), homepage = site_url)
-
-			# Update DESCRIPTION with Github pages url
-			proj_desc <- desc::desc()
-			proj_desc$set_list("URL", c(gh_url, site_url))
-			proj_desc$write()
-
-			system("git add .")
-			system("git commit -m \"Create Package Site\"")
-
-			# Add badges to README.Rmd, linked to R-CMD-CHECK Github Action. Then re-build README.md
-			usethis::use_github_actions_badge()
-			devtools::build_readme()
-			system("git add .")
-			system("git commit -m \"Add R CMD CHECK Badge to README\"")
-			system("git push")
-
-			# Open Github Repo in web browser
-			utils::browseURL(gh_url)
-		}
+		repo_url <- create_github_repo(whoami = whoami, github_private = github_private)
+		pkgdown_site_url <- if (github_pkgdown) create_github_pkgdown(whoami)
+		utils::browseURL(repo_url)
 	}
 
 	if (open) {
@@ -227,4 +182,119 @@ create_project <- function(
 
 	setwd(cwd)
 	return(new_project_path)
+}
+
+#' Create a Github Repo
+#'
+#' From inside a project directory, call this function to create a repo in your a Github
+#' repository.
+#'
+#' This function uses the user-provided response from [gh::gh_whoami()] to create a Github repo. It
+#' will also paste the description from the `DESCRIPTION` file into the repository description on
+#' Github. It will also update the `URL` and `BugReports` fields in `DESCRIPTION` with the URL's
+#' from the newly created repo. If `add_cran_check_badge` is set to `TRUE`, the R-CMD-CHECK badge
+#' will be added to the README.
+#'
+#' @param whoami The result of [gh::gh_whoami]
+#' @param github_private Should the github repository be private? Default `FALSE`.
+#' @param add_cran_check_badge Should the R-CMD-CHECK be added to the README? Default is `TRUE`.
+#' @param open Should a web browser be opened to the new Github repository? Default is `FALSE`.
+#'
+#' @returns The URL of the newly created Github repository
+#' @export
+create_github_repo <- function(
+	whoami,
+	github_private = FALSE,
+	add_cran_check_badge = TRUE,
+	open = FALSE
+) {
+	.check_whoami(whoami)
+	check_logical_length_one(add_cran_check_badge)
+	check_logical_length_one(github_private)
+
+	proj_desc <- desc::desc()
+	# Create repo on Github
+	gh::gh(
+		endpoint = "POST /user/repos",
+		name = dir,
+		description = proj_desc$Description,
+		private = github_private,
+		.api_url = NULL
+	)
+
+	# Update DESCRIPTION with repo URL
+	proj_desc$set_list("URL", whoami$gh_url)
+	proj_desc$set_list("BugReports", sprintf("%s/issues", whoami$gh_url))
+	proj_desc$write()
+	system("git add .")
+	system("git commit -m \"Create Repository on Github\"")
+
+	if (add_cran_check_badge) {
+		# Add badges to README.Rmd, linked to R-CMD-CHECK Github Action. Then re-build README.md
+		usethis::use_github_actions_badge()
+		devtools::build_readme()
+		system("git add .")
+		system("git commit -m \"Add R CMD CHECK Badge to README\"")
+		system("git push")
+	}
+
+	# need to push before creating pkgdown
+	system(sprintf("git remote add origin %s", whoami$gh_url))
+	system("git push -u origin main")
+
+	if (open) utils::browseURL(whoami$gh_url)
+
+	return(invisible(whoami$gh_url))
+}
+
+#' Create a Github Repo
+#'
+#' From inside a project directory, for a project that has a repository on Github, call this
+#' function to create a pkgdown site hosted on Github Pages, and automatically deployed using
+#' Github Actions.
+#'
+#' This function uses the user-provided response from [gh::gh_whoami()] to identify the Github
+#' repo. It will also update the `URL` in the `DESCRIPTION` to include the pkgdown site URL.
+#'
+#' @param whoami The result of [gh::gh_whoami]
+#' @param open Should a web browser be opened to the new pkgdown site? Default is `FALSE`.
+#'
+#' @returns The URL of the newly created pkgdown site
+#' @export
+create_github_pkgdown <- function(whoami, open = FALSE) {
+	.check_whoami(whoami)
+
+	# sets up Github Pages on Github-side
+	site <- usethis::use_github_pages()
+
+	# Update repo homepage URL with github pages url
+	site_url <- site$html_url
+	gh::gh(sprintf("PATCH /repos/%s/%s", whoami$login, dir), homepage = site_url)
+
+	# Update DESCRIPTION with Github pages URL
+	proj_desc <- desc::desc()
+	proj_desc$set_list("URL", c(whoami$gh_url, site_url))
+	proj_desc$write()
+
+	system("git add .")
+	system("git commit -m \"Create Package Site\"")
+
+	if (open) utils::browseURL(site_url)
+
+	return(invisible(site_url))
+}
+
+.check_whoami <- function(whoami) {
+	if (is.list(whoami) && all(c("name", "login", "html_url", "token") %in% names(whoami))) {
+		return(invisible(TRUE))
+	}
+
+	cli::cli_abort(
+		c(
+			"Input `whoami` is not valid",
+			i = "Call {.run gh::gh_whoami(.api_url = NULL)} for the correct input format.",
+			i = "Call {.run usethis::gh_token_help()} for help configuring a token."
+		),
+		call = rlang::caller_env()
+	)
 }
