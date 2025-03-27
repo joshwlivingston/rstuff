@@ -54,7 +54,7 @@ create_project <- function(
 
 	# Check valid github_pkgdown and github_use combination
 	if (github_pkgdown && !github_use)
-		rlang::abort(X = "`github_use` must be TRUE when `github_pkgdown` is TRUE")
+		rlang::abort(c(x = "`github_use` must be TRUE when `github_pkgdown` is TRUE"))
 
 	if (github_use) {
 		# Identify github credentials (must be pre-set be user)
