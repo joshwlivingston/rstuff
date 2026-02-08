@@ -66,7 +66,7 @@ test_that("create_project() creates new directory", {
 })
 
 test_that("create_project() writes all expected files", {
-	expect_dir_length(17)
+	expect_dir_length(16)
 
 	expect_file_exists("_pkgdown.yml")
 	expect_file_exists(".gitignore")
@@ -91,9 +91,6 @@ test_that("create_project() writes all expected files", {
 
 	expect_dir_length(1, ".vscode")
 	expect_file_exists(".vscode", "settings.json")
-
-	expect_dir_length(1, "dev")
-	expect_file_exists("dev", "config_attachment.yaml")
 
 	expect_dir_length(1, "R")
 	expect_file_exists("R", "hello.R")
