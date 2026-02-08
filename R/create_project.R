@@ -62,6 +62,13 @@ create_project <- function(
 		))
 	}
 
+	# Check pandoc is available (for devtools::build_readme())
+	if (!pandoc::pandoc_available()) {
+		rlang::abort(c(
+			"Pandoc not installed. Run pandoc::install() to continue."
+		))
+	}
+
 	if (github_use) {
 		# Identify github credentials (must be pre-set be user)
 		whoami <- gh::gh_whoami(.api_url = NULL)

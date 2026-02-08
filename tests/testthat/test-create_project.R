@@ -12,7 +12,22 @@ test_that("create_project() throws an error when Github repository exists", {
 })
 
 test_that("create_project() throws an error when `github_pkgdown` is TRUE and `github_use` is FALSE", {
-	expect_error(create_project("tmp", github_use = FALSE, github_pkgdown = TRUE))
+	expect_error(create_project(
+		"tmp",
+		github_use = FALSE,
+		github_pkgdown = TRUE
+	))
+})
+
+test_that("create_project() throws an error when pandoc is not available", {
+	local_mocked_bindings(
+		pandoc_available = function() FALSE,
+		.package = "pandoc"
+	)
+	expect_error(
+		create_project("tmpdir", github_use = FALSE, github_pkgdown = FALSE),
+		"^Pandoc not installed\\. Run pandoc::install\\(\\) to continue\\.$"
+	)
 })
 
 test_that("create_project() throws a warning when `open` is TRUE outside RStudio", {
