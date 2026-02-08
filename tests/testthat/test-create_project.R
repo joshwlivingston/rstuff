@@ -66,7 +66,13 @@ test_that("create_project() creates new directory", {
 })
 
 test_that("create_project() writes all expected files", {
-	expect_dir_length(16)
+	dir_contents <-
+		setdiff(
+			fs::dir_ls(fs::path_join(c(res)), all = TRUE) |> as.character(),
+			# Only when running devtools::check() locally, the file NULL is written during the test
+			"tmp/'NULL'"
+		)
+	expect_length(dir_contents, 16)
 
 	expect_file_exists("_pkgdown.yml")
 	expect_file_exists(".gitignore")
