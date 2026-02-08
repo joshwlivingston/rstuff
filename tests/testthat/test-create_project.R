@@ -7,7 +7,7 @@ test_that("create_project() fails when `dir` exists", {
 })
 
 test_that("create_project() throws an error when Github repository exists", {
-	skip() # requires https auth
+	skip_on_ci()
 	expect_error(create_project("rstuff"))
 })
 
