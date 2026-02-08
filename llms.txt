@@ -1,0 +1,37 @@
+# rstuff
+
+rstuff is a collection of stuff I use in my day-to-day R work.
+
+## Installation
+
+You can install the package directly from Github:
+
+``` r
+# install.packages("pak")
+# pak::pak("devtools")
+devtools::install_github("joshwlivingston/rstuff")
+```
+
+## Formatting
+
+This package uses air, an R formatter and language server available as
+an extension in both vscode and positron. The IDE and extension will
+pickup the settings specified in .vscode/settings.json and air.toml
+
+# Package index
+
+## All functions
+
+- [`check_logical_length_one()`](https://joshwlivingston.github.io/rstuff/reference/class-length-checks.md)
+  [`check_character_length_one()`](https://joshwlivingston.github.io/rstuff/reference/class-length-checks.md)
+  [`check_null_or_character_length_one()`](https://joshwlivingston.github.io/rstuff/reference/class-length-checks.md)
+  : Function class and length checks
+- [`create_github_pkgdown()`](https://joshwlivingston.github.io/rstuff/reference/create_github_pkgdown.md)
+  : Create a Github Repo
+- [`create_github_repo()`](https://joshwlivingston.github.io/rstuff/reference/create_github_repo.md)
+  : Create a Github Repo
+- [`create_project()`](https://joshwlivingston.github.io/rstuff/reference/create_project.md)
+  : Create a New R Project
+- [`get_con_duckdb()`](https://joshwlivingston.github.io/rstuff/reference/get_con_duckdb.md)
+  : Duckdb Database Connection
+
