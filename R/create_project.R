@@ -49,7 +49,7 @@ create_project <- function(
 
 	# Check valid driectory
 	if (!grepl("^[a-zA-Z][a-zA-Z0-9.]*[a-zA-Z0-9]$", dir)) {
-		rlang::abort(sprintf("`dir` must be a valid R package name"))
+		rlang::abort("`dir` must be a valid R package name")
 	}
 	if (dir.exists(dir)) {
 		rlang::abort("Directory already exists")
