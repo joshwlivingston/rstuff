@@ -84,8 +84,10 @@ test_that("create_project() writes all expected files", {
 
 	expect_dir_length(1, ".github")
 
-	expect_dir_length(3, ".github", "workflows")
+	expect_dir_length(5, ".github", "workflows")
 	expect_file_exists(".github", "workflows", "air.yaml")
+	expect_file_exists(".github", "workflows", "check-no-suggests.yaml")
+	expect_file_exists(".github", "workflows", "jarl-check.yaml")
 	expect_file_exists(".github", "workflows", "pkgdown.yaml")
 	expect_file_exists(".github", "workflows", "R-CMD-check.yaml")
 
