@@ -25,11 +25,21 @@ test_that("create_project() throws a warning when `open` is TRUE outside RStudio
 	fs::dir_delete("tmp")
 })
 
-res <- create_project("tmp", open = FALSE, github_use = FALSE, github_pkgdown = FALSE)
-expect_file_exists <- function(...) expect_true(fs::file_exists(fs::path_join(c(res, ...))))
-expect_dir_exists <- function(...) expect_true(fs::dir_exists(fs::path_join(c(res, ...))))
-expect_dir_length <- function(n, ...)
+res <- create_project(
+	"tmp",
+	open = FALSE,
+	github_use = FALSE,
+	github_pkgdown = FALSE
+)
+expect_file_exists <- function(...) {
+	expect_true(fs::file_exists(fs::path_join(c(res, ...))))
+}
+expect_dir_exists <- function(...) {
+	expect_true(fs::dir_exists(fs::path_join(c(res, ...))))
+}
+expect_dir_length <- function(n, ...) {
 	expect_length(fs::dir_ls(fs::path_join(c(res, ...)), all = TRUE), n)
+}
 
 test_that("create_project() returns an fs_path of the new `dir`", {
 	expect_s3_class(res, c("fs_path", "character"))
@@ -74,4 +84,6 @@ test_that("create_project() writes all expected files", {
 	expect_file_exists("R", "hello.R")
 })
 
-if (fs::dir_exists("tmp")) fs::dir_delete("tmp")
+if (fs::dir_exists("tmp")) {
+	fs::dir_delete("tmp")
+}

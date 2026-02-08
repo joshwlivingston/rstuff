@@ -55,7 +55,8 @@ check_null_or_character_length_one <- function(x) {
 		rlang::abort(
 			sprintf(
 				"%s%s(%s) && length(%s) == %s must be TRUE",
-				if (null) sprintf("Since %s is not NULL, ", deparse(substitute(x))) else "",
+				if (null) sprintf("Since %s is not NULL, ", deparse(substitute(x))) else
+					"",
 				deparse(substitute(f)),
 				deparse(.substitute_in_parent(x)),
 				deparse(.substitute_in_parent(x)),
@@ -71,7 +72,8 @@ check_null_or_character_length_one <- function(x) {
 
 # meant to be called inside an exported check_() function
 .check_null_or_f_length_i <- function(x, f, i) {
-	if (!is.null(x) || length(x) > 1) .check_class_f_length_i(x, f, i, null = TRUE)
+	if (!is.null(x) || length(x) > 1)
+		.check_class_f_length_i(x, f, i, null = TRUE)
 }
 
 # meant to be called inside another function

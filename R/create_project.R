@@ -48,13 +48,19 @@ create_project <- function(
 	check_logical_length_one(open)
 
 	# Check valid driectory
-	if (!grepl("^[a-zA-Z][a-zA-Z0-9.]*[a-zA-Z0-9]$", dir))
+	if (!grepl("^[a-zA-Z][a-zA-Z0-9.]*[a-zA-Z0-9]$", dir)) {
 		rlang::abort(sprintf("`dir` must be a valid R package name"))
-	if (dir.exists(dir)) rlang::abort("Directory already exists")
+	}
+	if (dir.exists(dir)) {
+		rlang::abort("Directory already exists")
+	}
 
 	# Check valid github_pkgdown and github_use combination
-	if (github_pkgdown && !github_use)
-		rlang::abort(c(x = "`github_use` must be TRUE when `github_pkgdown` is TRUE"))
+	if (github_pkgdown && !github_use) {
+		rlang::abort(c(
+			x = "`github_use` must be TRUE when `github_pkgdown` is TRUE"
+		))
+	}
 
 	if (github_use) {
 		# Identify github credentials (must be pre-set be user)
@@ -115,11 +121,19 @@ create_project <- function(
 	# DESCRIPTION
 	description_fields <- usethis::use_description_defaults()
 	description_fields$Package <- dir
-	if (!is.null(package_title)) description_fields$Title <- str_to_title(package_title)
-	if (!is.null(package_description)) description_fields$Description <- package_description
-	if (!is.null(package_version)) description_fields$Version <- package_version
+	if (!is.null(package_title)) {
+		description_fields$Title <- str_to_title(package_title)
+	}
+	if (!is.null(package_description)) {
+		description_fields$Description <- package_description
+	}
+	if (!is.null(package_version)) {
+		description_fields$Version <- package_version
+	}
 
-	description <- desc::desc(text = sprintf("%s: %s", names(description_fields), description_fields))
+	description <- desc::desc(
+		text = sprintf("%s: %s", names(description_fields), description_fields)
+	)
 	description$write(file = "DESCRIPTION")
 	usethis::use_package("devtools", "Suggests")
 	usethis::use_package("rmarkdown", "Suggests")
@@ -150,7 +164,10 @@ create_project <- function(
 	system("git commit -m \"Initial Commit\"")
 
 	if (github_use) {
-		repo_url <- create_github_repo(whoami = whoami, github_private = github_private)
+		repo_url <- create_github_repo(
+			whoami = whoami,
+			github_private = github_private
+		)
 		pkgdown_site_url <- if (github_pkgdown) create_github_pkgdown(whoami)
 		utils::browseURL(repo_url)
 	}
@@ -242,7 +259,9 @@ create_github_repo <- function(
 	system(sprintf("git remote add origin %s", whoami$gh_url))
 	system("git push -u origin main")
 
-	if (open) utils::browseURL(whoami$gh_url)
+	if (open) {
+		utils::browseURL(whoami$gh_url)
+	}
 
 	return(invisible(whoami$gh_url))
 }
@@ -279,13 +298,18 @@ create_github_pkgdown <- function(whoami, open = FALSE) {
 	system("git add .")
 	system("git commit -m \"Create Package Site\"")
 
-	if (open) utils::browseURL(site_url)
+	if (open) {
+		utils::browseURL(site_url)
+	}
 
 	return(invisible(site_url))
 }
 
 .check_whoami <- function(whoami) {
-	if (is.list(whoami) && all(c("name", "login", "html_url", "token") %in% names(whoami))) {
+	if (
+		is.list(whoami) &&
+			all(c("name", "login", "html_url", "token") %in% names(whoami))
+	) {
 		return(invisible(TRUE))
 	}
 
