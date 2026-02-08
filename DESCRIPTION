@@ -1,6 +1,6 @@
 Package: rstuff
 Title: My Stuff For R
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Josh", "Livingston", , "joshwlivingston@gmail.com", role = c("aut", "cre"))
 Description: rstuff is a collection of functions and other objects I use
